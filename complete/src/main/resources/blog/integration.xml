@@ -1,14 +1,32 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xmlns:int="http://www.springframework.org/schema/integration"
-	xmlns:file="http://www.springframework.org/schema/integration/file"
-	xmlns:feed="http://www.springframework.org/schema/integration/feed"
-	xsi:schemaLocation="http://www.springframework.org/schema/integration/feed http://www.springframework.org/schema/integration/feed/spring-integration-feed.xsd
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:int="http://www.springframework.org/schema/integration"
+       xmlns:file="http://www.springframework.org/schema/integration/file"
+       xmlns:feed="http://www.springframework.org/schema/integration/feed"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/integration/feed http://www.springframework.org/schema/integration/feed/spring-integration-feed.xsd
 		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
 		http://www.springframework.org/schema/integration/file http://www.springframework.org/schema/integration/file/spring-integration-file.xsd
-		http://www.springframework.org/schema/integration http://www.springframework.org/schema/integration/spring-integration.xsd">
+		http://www.springframework.org/schema/integration http://www.springframework.org/schema/integration/spring-integration.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
 
+    <context:component-scan base-package="test" />
+    <int:annotation-config/>
+
+    <int:inbound-channel-adapter id="input" ref="messageCreator" method="createMessage" auto-startup="true" channel="creatorParserQ">
+        <int:poller fixed-rate="100"/>
+    </int:inbound-channel-adapter>
+
+    <int:channel id="creatorParserQ">
+        <int:queue capacity="10"/>
+    </int:channel>
+
+    <int:service-activator id="parser" ref="messageParser" method="parse" input-channel="creatorParserQ">
+        <int:poller fixed-rate="1000"/>
+    </int:service-activator>
+
+
+<!--
     <feed:inbound-channel-adapter id="news" url="https://spring.io/blog.atom">
         <int:poller fixed-rate="5000"/>
     </feed:inbound-channel-adapter>
@@ -23,5 +41,6 @@
             charset="UTF-8"
             directory="/tmp/si"
             filename-generator-expression="'SpringBlog'"/>
-
+-->
 </beans>
+
